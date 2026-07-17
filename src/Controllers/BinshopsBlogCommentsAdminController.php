@@ -17,14 +17,6 @@ use BinshopsBlog\Models\BinshopsBlogComment;
 class BinshopsBlogCommentsAdminController extends Controller
 {
     /**
-     * BinshopsBlogCommentsAdminController constructor.
-     */
-    public function __construct()
-    {
-        $this->middleware(UserCanManageBlogPosts::class);
-    }
-
-    /**
      * Show all comments (and show buttons with approve/delete)
      *
      * @param Request $request

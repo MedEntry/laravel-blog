@@ -1,122 +1,133 @@
 <?php
 
-Route::group(['middleware' => ['web'], 'namespace' => '\BinshopsBlog\Controllers'], function () {
+use BinshopsBlog\Controllers\BinshopsBlogAdminController;
+use BinshopsBlog\Controllers\BinshopsBlogCategoryAdminController;
+use BinshopsBlog\Controllers\BinshopsBlogCommentsAdminController;
+use BinshopsBlog\Controllers\BinshopsBlogImageUploadController;
+use BinshopsBlog\Controllers\BinshopsBlogReaderController;
+use BinshopsBlog\Middleware\UserCanManageBlogPosts;
+use Illuminate\Support\Facades\Route;
 
-    /** The main public facing blog routes - show all posts, view a category, rss feed, view a single post, also the add comment route */
-    Route::group(['prefix' => config('binshopsblog.blog_prefix', 'blog')], function () {
+Route::middleware(['web'])->group(function () {
 
-        Route::get('/', 'BinshopsBlogReaderController@index')
+    /** The main public-facing blog routes - show all posts, view a category, rss feed, view a single post, also the add comment route */
+    Route::group(['prefix' => config('binshopsblog.blog_prefix', 'blog')], static function () {
+
+        Route::get('/', [BinshopsBlogReaderController::class, 'index'])
             ->name('binshopsblog.index');
 
-        Route::get('/search', 'BinshopsBlogReaderController@search')
+        Route::get('/search', [BinshopsBlogReaderController::class, 'search'])
             ->name('binshopsblog.search');
 
-        Route::get('/feed', 'BinshopsBlogRssFeedController@feed')
-            ->name('binshopsblog.feed'); //RSS feed
+//        Route::get('/feed', [\BinshopsBlog\Controllers\BinshopsBlogRssFeedController::class, 'feed'])
+//            ->name('binshopsblog.feed'); //RSS feed
 
-        Route::get('/category{subcategories}', 'BinshopsBlogReaderController@view_category')->where('subcategories', '^[a-zA-Z0-9-_\/]+$')->name('binshopsblog.view_category');
+        Route::get('/category{subcategories}', [BinshopsBlogReaderController::class, 'view_category'])
+            ->where('subcategories', '^[a-zA-Z0-9-_\/]+$')->name('binshopsblog.view_category');
 
 //        Route::get('/category/{categorySlug}',
-//            'BinshopsBlogReaderController@view_category')
+//            [\BinshopsBlog\Controllers\BinshopsBlogReaderController::class,'view_category'])
 //            ->name('binshopsblog.view_category');
 
         Route::get('/{blogPostSlug}',
-            'BinshopsBlogReaderController@viewSinglePost')
+            [BinshopsBlogReaderController::class, 'viewSinglePost'])
             ->name('binshopsblog.single');
 
         // throttle to a max of 10 attempts in 3 minutes:
-        Route::group(['middleware' => 'throttle:10,3'], function () {
+        Route::group(['middleware' => 'throttle:10,3'], static function () {
 
             Route::post('save_comment/{blogPostSlug}',
-                'BinshopsBlogCommentWriterController@addNewComment')
+                [\BinshopsBlog\Controllers\BinshopsBlogCommentWriterController::class, 'addNewComment'])
                 ->name('binshopsblog.comments.add_new_comment');
         });
     });
 
     /* Admin backend routes - CRUD for posts, categories, and approving/deleting submitted comments */
-    Route::group(['prefix' => config('binshopsblog.admin_prefix', 'blog_admin')], function () {
+    Route::group(['prefix' => config('binshopsblog.admin_prefix', 'blog_admin')], static function () {
 
         Route::get('/search',
-            'BinshopsBlogAdminController@searchBlog')
+            [BinshopsBlogAdminController::class, 'searchBlog'])
             ->name('binshopsblog.admin.searchblog');
 
-        Route::get('/', 'BinshopsBlogAdminController@index')
+        Route::get('/', [BinshopsBlogAdminController::class, 'index'])
             ->name('binshopsblog.admin.index');
 
         Route::get('/add_post',
-            'BinshopsBlogAdminController@create_post')
+            [BinshopsBlogAdminController::class, 'create_post'])
             ->name('binshopsblog.admin.create_post');
 
 
         Route::post('/add_post',
-            'BinshopsBlogAdminController@store_post')
+            [BinshopsBlogAdminController::class, 'store_post'])
             ->name('binshopsblog.admin.store_post');
 
 
         Route::get('/edit_post/{blogPostId}',
-            'BinshopsBlogAdminController@edit_post')
+            [BinshopsBlogAdminController::class, 'edit_post'])
             ->name('binshopsblog.admin.edit_post');
 
         Route::patch('/edit_post/{blogPostId}',
-            'BinshopsBlogAdminController@update_post')
+            [BinshopsBlogAdminController::class, 'update_post'])
             ->name('binshopsblog.admin.update_post');
 
         //Removes post's photo
         Route::get('/remove_photo/{slug}',
-            'BinshopsBlogAdminController@remove_photo')
+            [BinshopsBlogAdminController::class, 'remove_photo'])
             ->name('binshopsblog.admin.remove_photo');
 
-        Route::group(['prefix' => "image_uploads",], function () {
+        Route::group(['prefix' => "image_uploads",], static function () {
 
-            Route::get("/", "BinshopsBlogImageUploadController@index")->name("binshopsblog.admin.images.all");
+            Route::get("/", [BinshopsBlogImageUploadController::class, 'index'])->name("binshopsblog.admin.images.all");
 
-            Route::get("/upload", "BinshopsBlogImageUploadController@create")->name("binshopsblog.admin.images.upload");
-            Route::post("/upload", "BinshopsBlogImageUploadController@store")->name("binshopsblog.admin.images.store");
+            Route::get("/upload", [BinshopsBlogImageUploadController::class, 'create'])
+                ->name("binshopsblog.admin.images.upload");
+            Route::post("/upload", [BinshopsBlogImageUploadController::class, 'store'])
+                ->name("binshopsblog.admin.images.store");
         });
 
         Route::delete('/delete_post/{blogPostId}',
-            'BinshopsBlogAdminController@destroy_post')
+            [BinshopsBlogAdminController::class, 'destroy_post'])
             ->name('binshopsblog.admin.destroy_post');
 
-        Route::group(['prefix' => 'comments',], function () {
+        Route::group(['prefix' => 'comments',], static function () {
 
             Route::get('/',
-                'BinshopsBlogCommentsAdminController@index')
+                [BinshopsBlogCommentsAdminController::class, 'index'])
                 ->name('binshopsblog.admin.comments.index');
 
             Route::patch('/{commentId}',
-                'BinshopsBlogCommentsAdminController@approve')
+                [BinshopsBlogCommentsAdminController::class, 'approve'])
                 ->name('binshopsblog.admin.comments.approve');
             Route::delete('/{commentId}',
-                'BinshopsBlogCommentsAdminController@destroy')
+                [BinshopsBlogCommentsAdminController::class, 'destroy'])
                 ->name('binshopsblog.admin.comments.delete');
         });
 
-        Route::group(['prefix' => 'categories'], function () {
+        Route::group(['prefix' => 'categories'], static function () {
 
             Route::get('/',
-                'BinshopsBlogCategoryAdminController@index')
+                [BinshopsBlogCategoryAdminController::class, 'index'])
                 ->name('binshopsblog.admin.categories.index');
 
             Route::get('/add_category',
-                'BinshopsBlogCategoryAdminController@create_category')
+                [BinshopsBlogCategoryAdminController::class, 'create_category'])
                 ->name('binshopsblog.admin.categories.create_category');
             Route::post('/add_category',
-                'BinshopsBlogCategoryAdminController@store_category')
+                [BinshopsBlogCategoryAdminController::class, 'store_category'])
                 ->name('binshopsblog.admin.categories.store_category');
 
             Route::get('/edit_category/{categoryId}',
-                'BinshopsBlogCategoryAdminController@edit_category')
+                [BinshopsBlogCategoryAdminController::class, 'edit_category'])
                 ->name('binshopsblog.admin.categories.edit_category');
 
             Route::patch('/edit_category/{categoryId}',
-                'BinshopsBlogCategoryAdminController@update_category')
+                [BinshopsBlogCategoryAdminController::class, 'update_category'])
                 ->name('binshopsblog.admin.categories.update_category');
 
             Route::delete('/delete_category/{categoryId}',
-                'BinshopsBlogCategoryAdminController@destroy_category')
+                [BinshopsBlogCategoryAdminController::class, 'destroy_category'])
                 ->name('binshopsblog.admin.categories.destroy_category');
         });
-    });
+    })->middleware(UserCanManageBlogPosts::class);
 });
 

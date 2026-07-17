@@ -20,15 +20,7 @@ use BinshopsBlog\Requests\UpdateBinshopsBlogCategoryRequest;
 class BinshopsBlogCategoryAdminController extends Controller
 {
     /**
-     * BinshopsBlogCategoryAdminController constructor.
-     */
-    public function __construct()
-    {
-        $this->middleware(UserCanManageBlogPosts::class);
-    }
-
-    /**
-     * Show list of categories
+     * Show a list of categories
      *
      * @return mixed
      */
@@ -58,7 +50,7 @@ class BinshopsBlogCategoryAdminController extends Controller
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function store_category(StoreBinshopsBlogCategoryRequest $request){
-        if ($request['parent_id']== 0){
+        if ($request['parent_id'] === 0){
             $request['parent_id'] = null;
         }
         $new_category = BinshopsBlogCategory::create($request->all());

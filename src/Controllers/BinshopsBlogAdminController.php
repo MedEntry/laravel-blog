@@ -10,7 +10,6 @@ use BinshopsBlog\Events\BlogPostAdded;
 use BinshopsBlog\Events\BlogPostEdited;
 use BinshopsBlog\Events\BlogPostWillBeDeleted;
 use BinshopsBlog\Helpers;
-use BinshopsBlog\Middleware\UserCanManageBlogPosts;
 use BinshopsBlog\Models\BinshopsBlogPost;
 use BinshopsBlog\Models\BinshopsBlogUploadedPhoto;
 use BinshopsBlog\Requests\CreateBinshopsBlogPostRequest;
@@ -18,6 +17,7 @@ use BinshopsBlog\Requests\DeleteBinshopsBlogPostRequest;
 use BinshopsBlog\Requests\UpdateBinshopsBlogPostRequest;
 use BinshopsBlog\Traits\UploadFileTrait;
 use Swis\Laravel\Fulltext\Search;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class BinshopsBlogAdminController
@@ -32,13 +32,10 @@ class BinshopsBlogAdminController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(UserCanManageBlogPosts::class);
-
         if (!is_array(config("binshopsblog"))) {
             throw new \RuntimeException('The config/binshopsblog.php does not exist. Publish the vendor files for the Binshops Blog package by running the php artisan publish:vendor command');
         }
     }
-
 
     /**
      * View all posts
@@ -79,7 +76,7 @@ class BinshopsBlogAdminController extends Controller
             $new_blog_post->posted_at = Carbon::now();
         }
 
-        $new_blog_post->user_id = \Auth::user()->id;
+        $new_blog_post->user_id = Auth::id();
         $new_blog_post->save();
 
         $new_blog_post->categories()->sync($request->categories());
@@ -90,7 +87,7 @@ class BinshopsBlogAdminController extends Controller
     }
 
     /**
-     * Show form to edit post
+     * Show form to edit a post.
      *
      * @param $blogPostId
      * @return mixed

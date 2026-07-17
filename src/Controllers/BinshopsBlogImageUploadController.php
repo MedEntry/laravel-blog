@@ -24,26 +24,19 @@ class BinshopsBlogImageUploadController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(UserCanManageBlogPosts::class);
-
         if (!is_array(config("binshopsblog"))) {
             throw new \RuntimeException('The config/binshopsblog.php does not exist. Publish the vendor files for the Binshops Blog package by running the php artisan publish:vendor command');
         }
 
-
         if (!config("binshopsblog.image_upload_enabled")) {
             throw new \RuntimeException("The binshopsblog.php config option has not enabled image uploading");
         }
-
-
     }
 
     /**
      * Show the main listing of uploaded images
      * @return mixed
      */
-
-
     public function index()
     {
         return view("binshopsblog_admin::imageupload.index", ['uploaded_photos' => BinshopsBlogUploadedPhoto::orderBy("id", "desc")->paginate(10)]);
@@ -110,7 +103,6 @@ class BinshopsBlogImageUploadController extends Controller
             $uploaded_image_details[$size] = $this->UploadAndResize(null, $request->get("image_title"), $image_size_details, $photo);
         }
 
-
         // store the image upload.
         BinshopsBlogUploadedPhoto::create([
             'image_title' => $request->get("image_title"),
@@ -119,10 +111,6 @@ class BinshopsBlogImageUploadController extends Controller
             'uploaded_images' => $uploaded_image_details,
         ]);
 
-
         return $uploaded_image_details;
-
     }
-
-
 }
