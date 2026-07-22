@@ -3,6 +3,7 @@
 use BinshopsBlog\Controllers\BinshopsBlogAdminController;
 use BinshopsBlog\Controllers\BinshopsBlogCategoryAdminController;
 use BinshopsBlog\Controllers\BinshopsBlogCommentsAdminController;
+use BinshopsBlog\Controllers\BinshopsBlogCommentWriterController;
 use BinshopsBlog\Controllers\BinshopsBlogImageUploadController;
 use BinshopsBlog\Controllers\BinshopsBlogReaderController;
 use BinshopsBlog\Middleware\UserCanManageBlogPosts;
@@ -19,15 +20,15 @@ Route::middleware(['web'])->group(function () {
         Route::get('/search', [BinshopsBlogReaderController::class, 'search'])
             ->name('binshopsblog.search');
 
-//        Route::get('/feed', [\BinshopsBlog\Controllers\BinshopsBlogRssFeedController::class, 'feed'])
-//            ->name('binshopsblog.feed'); //RSS feed
+        //        Route::get('/feed', [\BinshopsBlog\Controllers\BinshopsBlogRssFeedController::class, 'feed'])
+        //            ->name('binshopsblog.feed'); //RSS feed
 
         Route::get('/category{subcategories}', [BinshopsBlogReaderController::class, 'view_category'])
             ->where('subcategories', '^[a-zA-Z0-9-_\/]+$')->name('binshopsblog.view_category');
 
-//        Route::get('/category/{categorySlug}',
-//            [\BinshopsBlog\Controllers\BinshopsBlogReaderController::class,'view_category'])
-//            ->name('binshopsblog.view_category');
+        //        Route::get('/category/{categorySlug}',
+        //            [\BinshopsBlog\Controllers\BinshopsBlogReaderController::class,'view_category'])
+        //            ->name('binshopsblog.view_category');
 
         Route::get('/{blogPostSlug}',
             [BinshopsBlogReaderController::class, 'viewSinglePost'])
@@ -37,7 +38,7 @@ Route::middleware(['web'])->group(function () {
         Route::group(['middleware' => 'throttle:10,3'], static function () {
 
             Route::post('save_comment/{blogPostSlug}',
-                [\BinshopsBlog\Controllers\BinshopsBlogCommentWriterController::class, 'addNewComment'])
+                [BinshopsBlogCommentWriterController::class, 'addNewComment'])
                 ->name('binshopsblog.comments.add_new_comment');
         });
     });
@@ -56,11 +57,9 @@ Route::middleware(['web'])->group(function () {
             [BinshopsBlogAdminController::class, 'create_post'])
             ->name('binshopsblog.admin.create_post');
 
-
         Route::post('/add_post',
             [BinshopsBlogAdminController::class, 'store_post'])
             ->name('binshopsblog.admin.store_post');
-
 
         Route::get('/edit_post/{blogPostId}',
             [BinshopsBlogAdminController::class, 'edit_post'])
@@ -70,26 +69,26 @@ Route::middleware(['web'])->group(function () {
             [BinshopsBlogAdminController::class, 'update_post'])
             ->name('binshopsblog.admin.update_post');
 
-        //Removes post's photo
+        // Removes post's photo
         Route::get('/remove_photo/{slug}',
             [BinshopsBlogAdminController::class, 'remove_photo'])
             ->name('binshopsblog.admin.remove_photo');
 
-        Route::group(['prefix' => "image_uploads",], static function () {
+        Route::group(['prefix' => 'image_uploads'], static function () {
 
-            Route::get("/", [BinshopsBlogImageUploadController::class, 'index'])->name("binshopsblog.admin.images.all");
+            Route::get('/', [BinshopsBlogImageUploadController::class, 'index'])->name('binshopsblog.admin.images.all');
 
-            Route::get("/upload", [BinshopsBlogImageUploadController::class, 'create'])
-                ->name("binshopsblog.admin.images.upload");
-            Route::post("/upload", [BinshopsBlogImageUploadController::class, 'store'])
-                ->name("binshopsblog.admin.images.store");
+            Route::get('/upload', [BinshopsBlogImageUploadController::class, 'create'])
+                ->name('binshopsblog.admin.images.upload');
+            Route::post('/upload', [BinshopsBlogImageUploadController::class, 'store'])
+                ->name('binshopsblog.admin.images.store');
         });
 
         Route::delete('/delete_post/{blogPostId}',
             [BinshopsBlogAdminController::class, 'destroy_post'])
             ->name('binshopsblog.admin.destroy_post');
 
-        Route::group(['prefix' => 'comments',], static function () {
+        Route::group(['prefix' => 'comments'], static function () {
 
             Route::get('/',
                 [BinshopsBlogCommentsAdminController::class, 'index'])
@@ -130,4 +129,3 @@ Route::middleware(['web'])->group(function () {
         });
     })->middleware(UserCanManageBlogPosts::class);
 });
-
