@@ -53,12 +53,13 @@
                     <!-- Authentication Links -->
 
 
-                    <li class='nav-item px-2'><a class='nav-link' href='{{route("binshopsblog.index")}}'>Blog home</a></li>
+                    <li class='nav-item px-2'><a class='nav-link' href='{{route("binshopsblog.index")}}'>Blog home</a>
+                    </li>
 
 
                     <li class="nav-item ">
                         <a id="" class="nav-link " href="#" role="button"
-                           aria-haspopup="true" aria-expanded="false" >
+                           aria-haspopup="true" aria-expanded="false">
                             Logged in as {{ Auth::user()->name }}
                         </a>
                     </li>
@@ -125,7 +126,28 @@
 
     <script>
         ClassicEditor
-            .create(document.querySelector('#blog_post_body'))
+            .create({
+                attachTo: document.querySelector('#blog_post_body'),
+                plugins: [ Essentials, Paragraph, Bold, Italic, Font ],
+                toolbar: {
+                    items: [
+                        'undo', 'redo',
+                        '|',
+                        'heading',
+                        '|',
+                        'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
+                        '|',
+                        'bold', 'italic', 'strikethrough', 'subscript', 'superscript', 'code',
+                        '|',
+                        'link', 'uploadImage', 'blockQuote', 'codeBlock',
+                        '|',
+                        'alignment',
+                        '|',
+                        'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
+                    ],
+                    shouldNotGroupWhenFull: true
+                }
+            })
             .then(editor => {
                 console.log('Editor initialized', editor);
 
