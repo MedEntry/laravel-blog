@@ -120,34 +120,12 @@
     </main>
 </div>
 
-
 @if( config("binshopsblog.use_wysiwyg") && config("binshopsblog.echo_html") && (in_array( \Request::route()->getName() ,[ 'binshopsblog.admin.create_post' , 'binshopsblog.admin.edit_post'  ])))
+{{--
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-
     <script>
         ClassicEditor
-            .create({
-                attachTo: document.querySelector('#blog_post_body'),
-                plugins: [ Essentials, Paragraph, Bold, Italic, Font ],
-                toolbar: {
-                    items: [
-                        'undo', 'redo',
-                        '|',
-                        'heading',
-                        '|',
-                        'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
-                        '|',
-                        'bold', 'italic', 'strikethrough', 'subscript', 'superscript', 'code',
-                        '|',
-                        'link', 'uploadImage', 'blockQuote', 'codeBlock',
-                        '|',
-                        'alignment',
-                        '|',
-                        'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
-                    ],
-                    shouldNotGroupWhenFull: true
-                }
-            })
+            .create(document.querySelector('#blog_post_body'))
             .then(editor => {
                 console.log('Editor initialized', editor);
 
@@ -163,6 +141,13 @@
                 console.error(error);
             });
     </script>
+--}}
+<script src="//cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+<script>
+    if( typeof(CKEDITOR) !== "undefined" ) {
+        CKEDITOR.replace('blog_post_body');
+    }
+</script>
 @endif
 
 
