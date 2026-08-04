@@ -23,6 +23,12 @@ Route::middleware(['web'])->group(function () {
         //        Route::get('/feed', [\BinshopsBlog\Controllers\BinshopsBlogRssFeedController::class, 'feed'])
         //            ->name('binshopsblog.feed'); //RSS feed
 
+        /*
+         * The RSS feed is no longer supported, redirect to the index page to avoid 404 errors.
+         */
+        Route::get('/feed', [BinshopsBlogReaderController::class, 'index'])
+            ->name('binshopsblog.feed'); // RSS feed
+
         Route::get('/category{subcategories}', [BinshopsBlogReaderController::class, 'view_category'])
             ->where('subcategories', '^[a-zA-Z0-9-_\/]+$')->name('binshopsblog.view_category');
 
