@@ -6,24 +6,26 @@ use Illuminate\Http\UploadedFile;
 use BinshopsBlog\Events\UploadedImage;
 use BinshopsBlog\Models\BinshopsBlogPost;
 use File;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 trait UploadFileTrait
 {
     /** How many tries before we throw an Exception error */
-    static $num_of_attempts_to_find_filename = 100;
+    public static int $num_of_attempts_to_find_filename = 100;
 
     /**
-     * If false, we check if the blog_images/ dir is writable, when uploading images
+     * If false, we check if the blog_images/ dir is writable when uploading images
      * @var bool
      */
-    protected $checked_blog_image_dir_is_writable = false;
+    protected bool $checked_blog_image_dir_is_writable = false;
 
     /**
      * Small method to increase memory limit.
      * This can be defined in the config file. If binshopsblog.memory_limit is false/null then it won't do anything.
      * This is needed though because if you upload a large image it'll not work
      */
-    protected function increaseMemoryLimit()
+    protected function increaseMemoryLimit(): void
     {
         // increase memory - change this setting in config file
         if (config("binshopsblog.memory_limit")) {
@@ -42,7 +44,7 @@ trait UploadFileTrait
      * @return string
      * @throws \RuntimeException
      */
-    protected function getImageFilename(string $suggested_title, $image_size_details, UploadedFile $photo)
+    protected function getImageFilename(string $suggested_title, $image_size_details, UploadedFile $photo): string
     {
         $base = $this->generate_base_filename($suggested_title);
 
@@ -66,15 +68,13 @@ trait UploadFileTrait
 
         // too many attempts...
         throw new \RuntimeException("Unable to find a free filename after $i attempts - aborting now.");
-
     }
-
 
     /**
      * @return string
      * @throws \RuntimeException
      */
-    protected function image_destination_path()
+    protected function image_destination_path(): string
     {
         $path = public_path('/' . config("binshopsblog.blog_upload_dir"));
         $this->check_image_destination_path_is_writable($path);
@@ -83,22 +83,23 @@ trait UploadFileTrait
 
 
     /**
-     * @param BinshopsBlogPost $new_blog_post
      * @param $suggested_title - used to help generate the filename
      * @param $image_size_details - either an array (with 'w' and 'h') or a string (and it'll be uploaded at full size, no size reduction, but will use this string to generate the filename)
      * @param $photo
+     * @param ?BinshopsBlogPost $new_blog_post
      * @return array
      * @throws \Exception
      */
-    protected function UploadAndResize(BinshopsBlogPost $new_blog_post = null, $suggested_title, $image_size_details, $photo)
+    protected function UploadAndResize($suggested_title, $image_size_details, $photo, BinshopsBlogPost $new_blog_post = null): array
     {
         // get the filename/filepath
         $image_filename = $this->getImageFilename($suggested_title, $image_size_details, $photo);
         $destinationPath = $this->image_destination_path();
 
         // make image
-        $resizedImage = \Image::make($photo->getRealPath());
-
+        // $resizedImage = Image::make($photo->getRealPath());
+        $manager = ImageManager::usingDriver(Driver::class);
+        $resizedImage = $manager->decodePath($photo->getRealPath());
 
         if (is_array($image_size_details)) {
             // resize to these dimensions:
@@ -106,11 +107,9 @@ trait UploadFileTrait
             $h = $image_size_details['h'];
 
             if (isset($image_size_details['crop']) && $image_size_details['crop']) {
-                $resizedImage = $resizedImage->fit($w, $h);
+                $resizedImage = $resizedImage->cover($w, $h);
             } else {
-                $resizedImage = $resizedImage->resize($w, $h, function ($constraint) {
-                    $constraint->aspectRatio();
-                });
+                $resizedImage = $resizedImage->scale($w, $h);
             }
         } elseif ($image_size_details === 'fullsize') {
             // nothing to do here - no resizing needed.
@@ -133,7 +132,6 @@ trait UploadFileTrait
             'w' => $w,
             'h' => $h,
         ];
-
     }
 
     /**
@@ -161,7 +159,9 @@ trait UploadFileTrait
     {
         if (is_array($image_size_details)) {
             return '-' . $image_size_details['w'] . 'x' . $image_size_details['h'];
-        } elseif (is_string($image_size_details)) {
+        }
+
+        if (is_string($image_size_details)) {
             return "-" . str_slug(substr($image_size_details, 0, 30));
         }
 
@@ -189,15 +189,13 @@ trait UploadFileTrait
      * @param string $suggested_title
      * @return string
      */
-    protected function generate_base_filename(string $suggested_title)
+    protected function generate_base_filename(string $suggested_title): string
     {
         $base = substr($suggested_title, 0, 100);
         if (!$base) {
-            // if we have an empty string then we should use a random one:
-            $base = 'image-' . str_random(5);
-            return $base;
+            // if we have an empty string, then we should use a random one:
+            return 'image-' . str_random(5);
         }
         return $base;
     }
-
 }

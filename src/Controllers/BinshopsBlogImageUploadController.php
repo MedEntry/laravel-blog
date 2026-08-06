@@ -100,7 +100,7 @@ class BinshopsBlogImageUploadController extends Controller
 
             // this image size is enabled, and
             // we have an uploaded image that we can use
-            $uploaded_image_details[$size] = $this->UploadAndResize(null, $request->get("image_title"), $image_size_details, $photo);
+            $uploaded_image_details[$size] = $this->UploadAndResize($request->get("image_title"), $image_size_details, $photo, null);
         }
 
         // store the image upload.
