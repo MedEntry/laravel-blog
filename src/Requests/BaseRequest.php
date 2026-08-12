@@ -2,21 +2,18 @@
 
 namespace BinshopsBlog\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use BinshopsBlog\Interfaces\BaseRequestInterface;
+use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Class BaseRequest
- * @package BinshopsBlog\Requests
  */
 abstract class BaseRequest extends FormRequest implements BaseRequestInterface
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return \Auth::check() && \Auth::user()->canManageBinshopsBlogPosts();
     }

@@ -2,10 +2,9 @@
 
 namespace BinshopsBlog\Requests;
 
-
-use Illuminate\Validation\Rule;
 use BinshopsBlog\Requests\Traits\HasCategoriesTrait;
 use BinshopsBlog\Requests\Traits\HasImageUploadTrait;
+use Illuminate\Validation\Rule;
 
 class CreateBinshopsBlogPostRequest extends BaseBinshopsBlogPostRequest
 {
@@ -14,14 +13,12 @@ class CreateBinshopsBlogPostRequest extends BaseBinshopsBlogPostRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         $return = $this->baseBlogPostRules();
-        $return['slug'] [] = Rule::unique("binshops_blog_posts", "slug");
+        $return['slug'][] = Rule::unique('binshops_blog_posts', 'slug');
+
         return $return;
     }
-
 }

@@ -2,23 +2,17 @@
 
 namespace BinshopsBlog\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use BinshopsBlog\Interfaces\BaseRequestInterface;
-
 /**
  * Class BaseRequest
- * @package BinshopsBlog\Requests
  */
 class UploadImageRequest extends BaseRequest
 {
     /**
      *  rules for uploads
-     *
-     * @return array
      */
-    public function rules()
+    public function rules(): array
     {
-        $rules = [
+        return [
             'sizes_to_upload' => [
                 'required',
                 'array',
@@ -38,7 +32,5 @@ class UploadImageRequest extends BaseRequest
                 'max:150',
             ],
         ];
-
-        return $rules;
     }
 }
