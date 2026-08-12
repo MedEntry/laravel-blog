@@ -13,7 +13,7 @@ class FeedRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -23,7 +23,7 @@ class FeedRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'type' => [Rule::in(['rss','atom'])],
@@ -34,8 +34,8 @@ class FeedRequest extends FormRequest
      * Is this request for an RSS feed or Atom feed? defaults to atom.
      * @return string
      */
-    public function getFeedType()
+    public function getFeedType(): string
     {
-        return $this->get("type") === 'rss' ? 'rss' : 'atom';
+        return $this->input('type') === 'rss' ? 'rss' : 'atom';
     }
 }
