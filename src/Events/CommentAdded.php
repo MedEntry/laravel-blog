@@ -2,34 +2,29 @@
 
 namespace BinshopsBlog\Events;
 
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use BinshopsBlog\Models\BinshopsBlogComment;
 use BinshopsBlog\Models\BinshopsBlogPost;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 /**
  * Class CommentAdded
- * @package BinshopsBlog\Events
  */
 class CommentAdded
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /** @var  BinshopsBlogPost */
-    public $BinshopsBlogPost;
-    /** @var  BinshopsBlogComment */
-    public $newComment;
+    public BinshopsBlogPost $BinshopsBlogPost;
+
+    public BinshopsBlogComment $newComment;
 
     /**
      * CommentAdded constructor.
-     * @param BinshopsBlogPost $BinshopsBlogPost
-     * @param BinshopsBlogComment $newComment
      */
     public function __construct(BinshopsBlogPost $BinshopsBlogPost, BinshopsBlogComment $newComment)
     {
-        $this->BinshopsBlogPost=$BinshopsBlogPost;
-        $this->newComment=$newComment;
+        $this->BinshopsBlogPost = $BinshopsBlogPost;
+        $this->newComment = $newComment;
     }
-
 }

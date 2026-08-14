@@ -3,25 +3,27 @@
 namespace BinshopsBlog\Controllers;
 
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use BinshopsBlog\Interfaces\BaseRequestInterface;
 use BinshopsBlog\Events\BlogPostAdded;
 use BinshopsBlog\Events\BlogPostEdited;
 use BinshopsBlog\Events\BlogPostWillBeDeleted;
 use BinshopsBlog\Helpers;
+use BinshopsBlog\Interfaces\BaseRequestInterface;
 use BinshopsBlog\Models\BinshopsBlogPost;
 use BinshopsBlog\Models\BinshopsBlogUploadedPhoto;
 use BinshopsBlog\Requests\CreateBinshopsBlogPostRequest;
 use BinshopsBlog\Requests\DeleteBinshopsBlogPostRequest;
 use BinshopsBlog\Requests\UpdateBinshopsBlogPostRequest;
 use BinshopsBlog\Traits\UploadFileTrait;
-use Swis\Laravel\Fulltext\Search;
+use Carbon\Carbon;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
+use Swis\Laravel\Fulltext\Search;
 
 /**
  * Class BinshopsBlogAdminController
- * @package BinshopsBlog\Controllers
  */
 class BinshopsBlogAdminController extends Controller
 {
@@ -32,7 +34,7 @@ class BinshopsBlogAdminController extends Controller
      */
     public function __construct()
     {
-        if (!is_array(config("binshopsblog"))) {
+        if (! is_array(config('binshopsblog'))) {
             throw new \RuntimeException('The config/binshopsblog.php does not exist. Publish the vendor files for the Binshops Blog package by running the php artisan publish:vendor command');
         }
     }
@@ -44,26 +46,27 @@ class BinshopsBlogAdminController extends Controller
      */
     public function index()
     {
-        $posts = BinshopsBlogPost::orderBy("posted_at", "desc")
+        $posts = BinshopsBlogPost::orderBy('posted_at', 'desc')
             ->paginate(10);
 
-        return view("binshopsblog_admin::index", ['posts'=>$posts]);
+        return view('binshopsblog_admin::index', ['posts' => $posts]);
     }
 
     /**
      * Show form for creating new post
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     *
+     * @return Factory|\Illuminate\View\View
      */
     public function create_post()
     {
-        return view("binshopsblog_admin::posts.add_post");
+        return view('binshopsblog_admin::posts.add_post');
     }
 
     /**
      * Save a new post
      *
-     * @param CreateBinshopsBlogPostRequest $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
+     *
      * @throws \Exception
      */
     public function store_post(CreateBinshopsBlogPostRequest $request)
@@ -72,7 +75,7 @@ class BinshopsBlogAdminController extends Controller
 
         $this->processUploadedImages($request, $new_blog_post);
 
-        if (!$new_blog_post->posted_at) {
+        if (! $new_blog_post->posted_at) {
             $new_blog_post->posted_at = Carbon::now();
         }
 
@@ -81,29 +84,29 @@ class BinshopsBlogAdminController extends Controller
 
         $new_blog_post->categories()->sync($request->categories());
 
-        Helpers::flash_message("Added post");
+        Helpers::flash_message('Added post');
         event(new BlogPostAdded($new_blog_post));
+
         return redirect($new_blog_post->edit_url());
     }
 
     /**
      * Show form to edit a post.
      *
-     * @param $blogPostId
      * @return mixed
      */
-    public function edit_post( $blogPostId)
+    public function edit_post($blogPostId)
     {
         $post = BinshopsBlogPost::findOrFail($blogPostId);
-        return view("binshopsblog_admin::posts.edit_post")->withPost($post);
+
+        return view('binshopsblog_admin::posts.edit_post')->withPost($post);
     }
 
     /**
      * Save changes to a post
      *
-     * @param UpdateBinshopsBlogPostRequest $request
-     * @param $blogPostId
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
+     *
      * @throws \Exception
      */
     public function update_post(UpdateBinshopsBlogPostRequest $request, $blogPostId)
@@ -117,7 +120,7 @@ class BinshopsBlogAdminController extends Controller
         $post->save();
         $post->categories()->sync($request->categories());
 
-        Helpers::flash_message("Updated post");
+        Helpers::flash_message('Updated post');
         event(new BlogPostEdited($post));
 
         return redirect($post->edit_url());
@@ -126,11 +129,11 @@ class BinshopsBlogAdminController extends Controller
 
     public function remove_photo($postSlug)
     {
-        $post = BinshopsBlogPost::where("slug", $postSlug)->firstOrFail();
+        $post = BinshopsBlogPost::where('slug', $postSlug)->firstOrFail();
 
-        $path = public_path('/' . config("binshopsblog.blog_upload_dir"));
-        if (!$this->checked_blog_image_dir_is_writable) {
-            if (!is_writable($path)) {
+        $path = public_path('/'.config('binshopsblog.blog_upload_dir'));
+        if (! $this->checked_blog_image_dir_is_writable) {
+            if (! is_writable($path)) {
                 throw new \RuntimeException("Image destination path is not writable ($path)");
             }
         }
@@ -154,7 +157,7 @@ class BinshopsBlogAdminController extends Controller
         $post->image_thumbnail = null;
         $post->save();
 
-        Helpers::flash_message("Photo removed");
+        Helpers::flash_message('Photo removed');
 
         return redirect($post->edit_url());
     }
@@ -162,8 +165,6 @@ class BinshopsBlogAdminController extends Controller
     /**
      * Delete a post
      *
-     * @param DeleteBinshopsBlogPostRequest $request
-     * @param $blogPostId
      * @return mixed
      */
     public function destroy_post(DeleteBinshopsBlogPostRequest $request, $blogPostId)
@@ -177,7 +178,7 @@ class BinshopsBlogAdminController extends Controller
         // todo - delete the featured images?
         // At the moment it just issues a warning saying the images are still on the server.
 
-        return view("binshopsblog_admin::posts.deleted_post")
+        return view('binshopsblog_admin::posts.deleted_post')
             ->withDeletedPost($post);
 
     }
@@ -185,14 +186,13 @@ class BinshopsBlogAdminController extends Controller
     /**
      * Process any uploaded images (for featured image)
      *
-     * @param BaseRequestInterface $request
-     * @param $new_blog_post
      * @throws \Exception
+     *
      * @todo - next full release, tidy this up!
      */
     protected function processUploadedImages(BaseRequestInterface $request, BinshopsBlogPost $new_blog_post)
     {
-        if (!config("binshopsblog.image_upload_enabled")) {
+        if (! config('binshopsblog.image_upload_enabled')) {
             // image upload was disabled
             return;
         }
@@ -202,8 +202,7 @@ class BinshopsBlogAdminController extends Controller
         // to save in db later
         $uploaded_image_details = [];
 
-
-        foreach ((array)config('binshopsblog.image_sizes') as $size => $image_size_details) {
+        foreach ((array) config('binshopsblog.image_sizes') as $size => $image_size_details) {
 
             if ($image_size_details['enabled'] && $photo = $request->get_image_file($size)) {
                 // this image size is enabled, and
@@ -218,9 +217,9 @@ class BinshopsBlogAdminController extends Controller
 
         // store the image upload.
         // todo: link this to the BinshopsBlog_post row.
-        if (count(array_filter($uploaded_image_details))>0) {
+        if (count(array_filter($uploaded_image_details)) > 0) {
             BinshopsBlogUploadedPhoto::create([
-                'source' => "BlogFeaturedImage",
+                'source' => 'BlogFeaturedImage',
                 'uploaded_images' => $uploaded_image_details,
             ]);
         }
@@ -229,24 +228,24 @@ class BinshopsBlogAdminController extends Controller
     /**
      * Show the search results for $_GET['s']
      *
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|\Illuminate\View\View
+     *
      * @throws \Exception
      */
     public function searchBlog(Request $request)
     {
-        if (!config("binshopsblog.search.search_enabled")) {
-            throw new \Exception("Search is disabled");
+        if (! config('binshopsblog.search.search_enabled')) {
+            throw new \Exception('Search is disabled');
         }
-        $query = $request->get("s");
-        $search = new Search();
+        $query = $request->input('s');
+        $search = new Search;
         $search_results = $search->run($query);
 
-        \View::share("title", "Search results for " . e($query));
+        \View::share('title', 'Search results for '.e($query));
 
-        return view("binshopsblog_admin::index", [
+        return view('binshopsblog_admin::index', [
             'search' => true,
-            'posts'=>$search_results
+            'posts' => $search_results,
         ]);
     }
 }

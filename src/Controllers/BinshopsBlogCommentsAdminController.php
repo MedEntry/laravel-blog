@@ -3,46 +3,43 @@
 namespace BinshopsBlog\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use BinshopsBlog\Events\CommentApproved;
 use BinshopsBlog\Events\CommentWillBeDeleted;
 use BinshopsBlog\Helpers;
-use BinshopsBlog\Middleware\UserCanManageBlogPosts;
 use BinshopsBlog\Models\BinshopsBlogComment;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 /**
  * Class BinshopsBlogCommentsAdminController
- * @package BinshopsBlog\Controllers
  */
 class BinshopsBlogCommentsAdminController extends Controller
 {
     /**
      * Show all comments (and show buttons with approve/delete)
      *
-     * @param Request $request
      * @return mixed
      */
     public function index(Request $request)
     {
-        $comments = BinshopsBlogComment::withoutGlobalScopes()->orderBy("created_at", "desc")
-            ->with("post");
+        $comments = BinshopsBlogComment::withoutGlobalScopes()->orderBy('created_at', 'desc')
+            ->with('post');
 
-        if ($request->get("waiting_for_approval")) {
-            $comments->where("approved", false);
+        if ($request->input('waiting_for_approval')) {
+            $comments->where('approved', false);
         }
 
         $comments = $comments->paginate(100);
-        return view("binshopsblog_admin::comments.index")
+
+        return view('binshopsblog_admin::comments.index')
             ->withComments($comments
             );
     }
 
-
     /**
      * Approve a comment
      *
-     * @param $blogCommentId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function approve($blogCommentId)
     {
@@ -50,7 +47,7 @@ class BinshopsBlogCommentsAdminController extends Controller
         $comment->approved = true;
         $comment->save();
 
-        Helpers::flash_message("Approved!");
+        Helpers::flash_message('Approved!');
         event(new CommentApproved($comment));
 
         return back();
@@ -60,8 +57,7 @@ class BinshopsBlogCommentsAdminController extends Controller
     /**
      * Delete a submitted comment
      *
-     * @param $blogCommentId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy($blogCommentId)
     {
@@ -70,9 +66,8 @@ class BinshopsBlogCommentsAdminController extends Controller
 
         $comment->delete();
 
-        Helpers::flash_message("Deleted!");
+        Helpers::flash_message('Deleted!');
+
         return back();
     }
-
-
 }

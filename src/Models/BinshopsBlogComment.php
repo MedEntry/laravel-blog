@@ -3,66 +3,59 @@
 namespace BinshopsBlog\Models;
 
 use App\User;
-use Illuminate\Database\Eloquent\Model;
 use BinshopsBlog\Scopes\BlogCommentApprovedAndDefaultOrderScope;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BinshopsBlogComment extends Model
 {
-    public $casts = [
-        'approved' => 'boolean',
-    ];
-
     public $fillable = [
 
         'comment',
         'author_name',
     ];
 
+    public $casts = [
+        'approved' => 'boolean',
+    ];
 
     /**
      * The "booting" method of the model.
-     *
-     * @return void
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        /* If user is logged in and \Auth::user()->canManageBinshopsBlogPosts() == true, show any/all posts.
+        /* If a user is logged in and \Auth::user()->canManageBinshopsBlogPosts() == true, show any/all posts.
            otherwise (which will be for most users) it should only show published posts that have a posted_at
            time <= Carbon::now(). This sets it up: */
-        static::addGlobalScope(new BlogCommentApprovedAndDefaultOrderScope());
+        static::addGlobalScope(new BlogCommentApprovedAndDefaultOrderScope);
     }
-
-
 
     /**
      * The associated BinshopsBlogPost
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function post()
+    public function post(): BelongsTo
     {
-        return $this->belongsTo(BinshopsBlogPost::class,"binshops_blog_post_id");
+        return $this->belongsTo(BinshopsBlogPost::class, 'binshops_blog_post_id');
     }
 
     /**
      * Comment author user (if set)
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(config("binshopsblog.user_model"), 'user_id');
+        return $this->belongsTo(config('binshopsblog.user_model'), 'user_id');
     }
 
     /**
      * Return author string (either from the User (via ->user_id), or the submitted author_name value
-     *
-     * @return string
      */
-    public function author()
+    public function author(): string
     {
         if ($this->user_id) {
-            $field = config("binshopsblog.comments.user_field_for_author_name","name");
+            $field = config('binshopsblog.comments.user_field_for_author_name', 'name');
+
             return optional($this->user)->$field;
         }
 

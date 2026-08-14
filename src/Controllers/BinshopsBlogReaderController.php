@@ -24,9 +24,6 @@ class BinshopsBlogReaderController extends Controller
     /**
      * Show blog posts
      * If category_slug is set, then only show from that category
-     *
-     * @param string|null $category_slug
-     * @return Factory|View
      */
     public function index(?string $category_slug = null): Factory|View
     {
@@ -47,7 +44,10 @@ class BinshopsBlogReaderController extends Controller
             $posts = BinshopsBlogPost::query();
         }
 
-        $posts = $posts->where('is_published', '=', 1)->where('posted_at', '<', Carbon::now()->format('Y-m-d H:i:s'))->orderBy('posted_at', 'desc')->paginate(config('binshopsblog.per_page', 10));
+        $posts = $posts->where('is_published', '=', 1)
+            ->where('posted_at', '<', Carbon::now()->format('Y-m-d H:i:s'))
+            ->orderBy('posted_at', 'desc')
+            ->paginate(config('binshopsblog.per_page', 10));
 
         // load categories in 3 levels
         $rootList = BinshopsBlogCategory::where('parent_id', '=', null)->get();
@@ -69,9 +69,7 @@ class BinshopsBlogReaderController extends Controller
     /**
      * Show the search results for $_GET['s']
      *
-     * @param SearchRequest $request
      *
-     * @return Factory|View
      * @throws \Exception
      */
     public function search(SearchRequest $request): Factory|View
@@ -98,7 +96,6 @@ class BinshopsBlogReaderController extends Controller
     /**
      * View all posts in $category_slug category
      *
-     * @param $hierarchy
      * @return mixed
      */
     public function view_category($hierarchy)
@@ -110,10 +107,6 @@ class BinshopsBlogReaderController extends Controller
 
     /**
      * View a single post and (if enabled) it's comments
-     *
-     * @param Request $request
-     * @param string $blogPostSlug
-     * @return Factory|View
      */
     public function viewSinglePost(Request $request, string $blogPostSlug): Factory|View
     {

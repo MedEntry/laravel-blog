@@ -2,29 +2,25 @@
 
 namespace BinshopsBlog\Events;
 
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use BinshopsBlog\Models\BinshopsBlogPost;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 /**
  * Class BlogPostWillBeDeleted
- * @package BinshopsBlog\Events
  */
 class BlogPostWillBeDeleted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /** @var  BinshopsBlogPost */
-    public $BinshopsBlogPost;
+    public BinshopsBlogPost $BinshopsBlogPost;
 
     /**
      * BlogPostWillBeDeleted constructor.
-     * @param BinshopsBlogPost $BinshopsBlogPost
      */
     public function __construct(BinshopsBlogPost $BinshopsBlogPost)
     {
-        $this->BinshopsBlogPost=$BinshopsBlogPost;
+        $this->BinshopsBlogPost = $BinshopsBlogPost;
     }
-
 }
