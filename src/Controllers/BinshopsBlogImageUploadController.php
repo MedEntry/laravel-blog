@@ -7,9 +7,6 @@ use BinshopsBlog\Models\BinshopsBlogUploadedPhoto;
 use BinshopsBlog\Requests\UploadImageRequest;
 use BinshopsBlog\Traits\UploadFileTrait;
 use File;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 use Illuminate\View\View;
 
 /**
@@ -35,20 +32,16 @@ class BinshopsBlogImageUploadController extends Controller
 
     /**
      * Show the main listing of uploaded images
-     *
-     * @return mixed
      */
-    public function index()
+    public function index(): View
     {
         return view('binshopsblog_admin::imageupload.index', ['uploaded_photos' => BinshopsBlogUploadedPhoto::orderBy('id', 'desc')->paginate(10)]);
     }
 
     /**
      * show the form for uploading a new image
-     *
-     * @return Factory|View
      */
-    public function create()
+    public function create(): View
     {
         return view('binshopsblog_admin::imageupload.create', []);
     }
@@ -56,11 +49,9 @@ class BinshopsBlogImageUploadController extends Controller
     /**
      * Save a new uploaded image
      *
-     * @return RedirectResponse|Redirector
-     *
      * @throws \Exception
      */
-    public function store(UploadImageRequest $request)
+    public function store(UploadImageRequest $request): View
     {
         $processed_images = $this->processUploadedImages($request);
 
@@ -77,7 +68,7 @@ class BinshopsBlogImageUploadController extends Controller
      *
      * @todo - This class was added after the other main features, so this duplicates some code from the main blog post admin controller (BinshopsBlogAdminController). For next full release this should be tided up.
      */
-    protected function processUploadedImages(UploadImageRequest $request)
+    protected function processUploadedImages(UploadImageRequest $request): array
     {
         $this->increaseMemoryLimit();
         $photo = $request->file('upload');
@@ -86,12 +77,12 @@ class BinshopsBlogImageUploadController extends Controller
         $uploaded_image_details = [];
 
         $sizes_to_upload = $request->input('sizes_to_upload');
+        $suggested_title = ($request->has('image_title')) ? $request->input('image_title') : null;
 
-        // now upload a full size - this is a special case, not in the config file. We only store full size images in this class, not as part of the featured blog image uploads.
+        // now upload a full size - this is a special case, not in the config file.
+        // We only store full size images in this class, not as part of the featured blog image uploads.
         if (isset($sizes_to_upload['BinshopsBlog_full_size']) && $sizes_to_upload['BinshopsBlog_full_size'] === 'true') {
-
-            $uploaded_image_details['BinshopsBlog_full_size'] = $this->UploadAndResize(null, $request->input('image_title'), 'fullsize', $photo);
-
+            $uploaded_image_details['BinshopsBlog_full_size'] = $this->UploadAndResize($suggested_title, 'fullsize', $photo);
         }
 
         foreach ((array) config('binshopsblog.image_sizes') as $size => $image_size_details) {
@@ -102,7 +93,7 @@ class BinshopsBlogImageUploadController extends Controller
 
             // this image size is enabled, and
             // we have an uploaded image that we can use
-            $uploaded_image_details[$size] = $this->UploadAndResize($request->input('image_title'), $image_size_details, $photo, null);
+            $uploaded_image_details[$size] = $this->UploadAndResize($suggested_title, $image_size_details, $photo, null);
         }
 
         // store the image upload.
