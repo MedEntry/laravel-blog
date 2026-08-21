@@ -102,7 +102,7 @@ class BinshopsBlogPost extends Model implements SearchResultInterface
     /**
      * Return author string (either from the User (via ->user_id), or the submitted author_name value
      */
-    public function author_string(): string
+    public function author_string()
     {
         if ($this->author) {
             return optional($this->author)->name;
