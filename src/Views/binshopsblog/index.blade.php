@@ -72,7 +72,7 @@
         </div>
 
         <div class='text-center  col-sm-4 mx-auto'>
-            {{$posts->appends( [] )->links()}}
+            {{$posts->links()}}
         </div>
         @if (config('binshopsblog.search.search_enabled') )
             @include('binshopsblog::sitewide.search_form')

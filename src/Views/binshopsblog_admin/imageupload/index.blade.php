@@ -111,7 +111,7 @@
 
 
     <div class='text-center'>
-        {{$uploaded_photos->appends( [] )->links()}}
+        {{$uploaded_photos->links()}}
     </div>
 
 

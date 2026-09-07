@@ -68,7 +68,7 @@
 
 
     <div class='text-center'>
-        {{$comments->appends( [] )->links()}}
+        {{$comments->links()}}
     </div>
 
 @endsection

@@ -118,6 +118,6 @@
     @endforelse
     
     <div class='text-center'>
-        {{$posts->appends( [] )->links()}}
+        {{$posts->links()}}
     </div>
 @endsection
